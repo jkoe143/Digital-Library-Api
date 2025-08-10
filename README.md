@@ -13,7 +13,3 @@ Spring Boot REST API for managing books with photo upload capabilities.
 1. Start PostgreSQL: `docker-compose up -d`
 2. Run application: `mvn spring-boot:run`
 3. API available at: `http://localhost:8080`
-
-## Frontend Repository
-
-https://github.com/jkoe143/digital-library-web

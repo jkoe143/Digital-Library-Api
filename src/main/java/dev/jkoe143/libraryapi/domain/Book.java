@@ -13,6 +13,7 @@ import org.hibernate.annotations.UuidGenerator;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
 @Entity
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,8 +30,6 @@ public class Book {
     private String author;
     @Column(length = 1000)
     private String photoUrl;
-    @Column(columnDefinition = "TEXT")
-    private String imageData;
     @Column(length = 1000)
     private String libraryUrl;
     @Column(length = 1000)

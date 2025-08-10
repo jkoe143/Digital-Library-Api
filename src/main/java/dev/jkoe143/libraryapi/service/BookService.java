@@ -10,8 +10,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.Base64;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static dev.jkoe143.libraryapi.constant.Constant.PHOTO_DIRECTORY;
 
 @Service
 @Slf4j
@@ -34,22 +43,31 @@ public class BookService {
 
     public String uploadPhoto(String id, MultipartFile file){
         log.info("Saving picture for book ID: {}", id);
+        log.info("Uploading photo for book with id: {}", id);
         Book book = getBook(id);
-
-        try {
-            byte[] imageBytes = file.getBytes();
-            String base64Image = "data:" + file.getContentType() + ";base64,"
-                    + Base64.getEncoder().encodeToString(imageBytes);
-
-            book.setImageData(base64Image);
-            book.setPhotoUrl(base64Image);
-            bookRepo.save(book);
-
-            return base64Image;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to upload photo", e);
-        }
+        String photoUrl = photoFunction.apply(id, file);
+        book.setPhotoUrl(photoUrl);
+        bookRepo.save(book);
+        return photoUrl;
     }
+
+    private final Function<String, String> fileExtension = filename -> Optional.of(filename).filter(name -> name.contains("."))
+            .map(name -> "." + name.substring(filename.lastIndexOf(".") + 1)).orElse(".png");
+
+    private final BiFunction<String, MultipartFile, String> photoFunction = (id, image) -> {
+        String filename = id + fileExtension.apply(image.getOriginalFilename());
+        try {
+            Path fileStorageLocation = Paths.get(PHOTO_DIRECTORY ).toAbsolutePath().normalize();
+            if (!Files.exists(fileStorageLocation)) {
+                Files.createDirectories(fileStorageLocation);
+            }
+            Files.copy(image.getInputStream(), fileStorageLocation.resolve(filename), REPLACE_EXISTING);
+            return ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/books/image/" + filename).toUriString();
+        } catch (Exception exception) {
+            throw new RuntimeException("Unable to save image");
+        }
+    };
 
     public Book updateBook(Book book) {
         Book existingBook = getBook(book.getId());
