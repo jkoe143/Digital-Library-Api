@@ -1,8 +1,6 @@
 package dev.jkoe143.libraryapi.constant;
 
 public class Constant {
-    public static final String PHOTO_DIRECTORY = System.getenv("PHOTO_DIRECTORY") != null
-            ? System.getenv("PHOTO_DIRECTORY")
-            : System.getProperty("user.home") + "/Downloads/uploads/";
+    public static final String PHOTO_DIRECTORY = System.getProperty("user.home") + "/Downloads/uploads/";
     public static final String X_REQUESTED_WITH = "X-Requested-With";
 }
